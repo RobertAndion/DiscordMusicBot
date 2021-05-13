@@ -4,11 +4,16 @@ If you come across some issues feel free to post them in the issues.
 
 ### General Setup
 To be written.
+### Node must be version 12!
+Ubuntu node install:
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+sudo apt-get install -y nodejs
 
 ## COMMAND DOCUMENTATION:
 ### NOTE: 
 Anything after ! is a command name and the prefix ! is needed to run the command,
 the items in <> are the function arguments and anything with OPTIONAL is as it sounds.
+
 ```
 !play <SONG-NAME>
 ```

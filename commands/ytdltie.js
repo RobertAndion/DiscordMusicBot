@@ -1,10 +1,11 @@
-/*
-Start of an object wrapper for the ytdl class
-and a queue system for a nodeJS music bot.
-*/
-
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
+/*
+Start of an object wrapper for the ytdl class and a queue system for a nodeJS music bot.
+This is a core file for the bot but also acts as an interface to the ytdl code and simplifies it in
+the main index page.
+*/
+
 
 /*ffmpeg_options = { // Keep bot from dying if it cuts out, could pass this in play, hard coded for now.
     'options': '-vn',
@@ -144,6 +145,8 @@ module.exports = class ytdltie {
             return;
         }
         const stream = ytdl(song.url, {filter: 'audioonly',options: '-vn', before_options: "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", highWaterMark: 1<<25, maxReconnect: 10});
+        // highWaterMark is in bytes, 32MB to load up front(Excessive but effective?), maxReconnect tells it to try 10 times on failure. before_options also tell it to try and reconnect.
+        // Each song gets its own new Stream, so in theory 10 should be enough unless the song is super long.
         song_queue.connection.play(stream, {seek: 0, volume: 0.5})
         .on('finish', () => {
             song_queue.songs.shift();
@@ -153,4 +156,3 @@ module.exports = class ytdltie {
     }
 
 }
-

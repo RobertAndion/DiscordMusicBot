@@ -1,21 +1,12 @@
-/*
-packages:
-discord.js
-@discordjs/opus
-ffmpeg-static
-yt-search
-ytdl-core
-
-Ubuntu node install:
-curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-sudo apt-get install -y nodejs
-*/
 const ytdltie = require('./commands/ytdltie.js');
 const Discord = require('discord.js');
 const {
     prefix,
     token,
 } = require('./config.json');
+/*
+Main file for running the bot, contains the command handler, ytdltie object (MusicHandler) and error handling.
+*/
 const client = new Discord.Client();
 const MusicHandler = new ytdltie(Discord,client);
 client.login(token);
