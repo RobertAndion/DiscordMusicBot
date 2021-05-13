@@ -6,6 +6,11 @@ and a queue system for a nodeJS music bot.
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
 
+/*ffmpeg_options = { // Keep bot from dying if it cuts out, could pass this in play, hard coded for now.
+    'options': '-vn',
+    "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+}*/
+
 module.exports = class ytdltie {
     constructor(Discord, client){
         this.client = client;
@@ -70,7 +75,14 @@ module.exports = class ytdltie {
             song_queue.songs.shift();
             amount--;
         }
-        song_queue.connection.dispatcher.end();
+        try{
+            song_queue.connection.dispatcher.end();
+        }
+        catch(err) { // Clear the buffer if we have trouble ending the queue.
+            song_queue.voice_channel.leave();
+            this.queue.delete(guild.id);
+            return;
+        }
     }
 
     async viewQueue(message, page = 1) {
@@ -82,34 +94,56 @@ module.exports = class ytdltie {
         let current = "";
         for(let i = 0; i < songlist.length; i++){
             if(i == 0){
-                current = current + "Now Playing: " + songlist[i]['title'] + '\n';
+                current = current + "**Now Playing:** " + songlist[i]['title'] + '\n';
             } else if(i % 10 == 0){
-                current = current + songlist[i]['title'] + '\n';
                 pages.push(current)
                 current = "";
+                current += i + ": " +songlist[i]["title"] + '\n';
             } else {
-                current += songlist[i]["title"] + '\n';
+                current += i + ": " +songlist[i]["title"] + '\n';
             }
         }
         pages.push(current);
         // Create the embed package to send.
+        let pageSafe = 0;
+        if (page >= 1 && page <= pages.length)
+            pageSafe = page;
+        else if (page < 1)
+            pageSafe = 1;
+        else if (page > pages.length)
+            pageSafe = pages.length;
+
         const embed = new this.Discord.MessageEmbed();
             embed.setTitle("Queue");
-            embed.setDescription(pages[page - 1]);
+            embed.setDescription(pages[pageSafe - 1]);
             embed.setFooter("Page: " + page + "/" + pages.length);
         message.channel.send(embed);
         
     }
 
-    video_player = async(guild, song) => {
+    async shuffle(message) {
+        const voiceChannel = message.member.voice.channel;
+        const server_queue = this.queue.get(message.guild.id);
+        if(!voiceChannel || server_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first.");
+        const songlist = server_queue.songs;
+        for(let i = 1; i < songlist.length; i++) {
+            let temp = songlist[i];
+            let randIndex = Math.floor((Math.random() * (songlist.length - 1)) + 1);
+            songlist[i] = songlist[randIndex];
+            songlist[randIndex] = temp;
+        }
+        message.channel.send("Shuffle Complete.");
+    }
+
+    async video_player(guild, song)  {
         const song_queue = this.queue.get(guild.id);
         if(!song) { // This will need some modification. A null song is an error. look into how big of one
             song_queue.voice_channel.leave();
             this.queue.delete(guild.id);
             return;
         }
-        const stream = ytdl(song.url, {filter: 'audioonly'});
-        song_queue.connection.play(stream, {seek: 0, volume: 0.5 })
+        const stream = ytdl(song.url, {filter: 'audioonly',options: '-vn', before_options: "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5", highWaterMark: 1<<25, maxReconnect: 10});
+        song_queue.connection.play(stream, {seek: 0, volume: 0.5})
         .on('finish', () => {
             song_queue.songs.shift();
             this.video_player(guild, song_queue.songs[0])
