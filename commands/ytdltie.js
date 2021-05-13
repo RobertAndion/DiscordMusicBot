@@ -70,6 +70,7 @@ module.exports = class ytdltie {
         const song_queue = this.queue.get(message.guild.id);
         if(!song_queue) return message.channel.send("Nothing playing!"); // Check for empty queue first.
         if(song_queue.voice_channel != voiceChannel || !voiceChannel) return message.channel.send("Please join the same voice channel as me.");
+        if(amount <= 0) return message.channel.send("Please enter a valid skip amount. (>=1)");
         amount--;
         while(amount > 0){
             song_queue.songs.shift();
@@ -80,7 +81,7 @@ module.exports = class ytdltie {
         }
         catch(err) { // Clear the buffer if we have trouble ending the queue.
             song_queue.voice_channel.leave();
-            this.queue.delete(guild.id);
+            this.queue.delete(message.guild.id);
             return;
         }
     }
@@ -116,7 +117,7 @@ module.exports = class ytdltie {
         const embed = new this.Discord.MessageEmbed();
             embed.setTitle("Queue");
             embed.setDescription(pages[pageSafe - 1]);
-            embed.setFooter("Page: " + page + "/" + pages.length);
+            embed.setFooter("Page: " + pageSafe + "/" + pages.length);
         message.channel.send(embed);
         
     }

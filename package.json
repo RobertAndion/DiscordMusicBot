@@ -1,0 +1,26 @@
+{
+  "name": "discordmusicbot",
+  "version": "1.0.0",
+  "description": "A bot to play songs on discord",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RobertAndion/DiscordMusicBotNode.git"
+  },
+  "author": "Robert Andion",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RobertAndion/DiscordMusicBotNode/issues"
+  },
+  "homepage": "https://github.com/RobertAndion/DiscordMusicBotNode#readme",
+  "dependencies": {
+    "@discordjs/opus": "^0.5.0",
+    "discord.js": "^12.5.3",
+    "ffmpeg-static": "^4.3.0",
+    "yt-search": "^2.8.0",
+    "ytdl-core": "^4.8.0"
+  }
+}
