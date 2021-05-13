@@ -139,7 +139,7 @@ module.exports = class ytdltie {
 
     async video_player(guild, song)  {
         const song_queue = this.queue.get(guild.id);
-        if(!song) { // This will need some modification. A null song is an error. look into how big of one
+        if(!song) { 
             song_queue.voice_channel.leave();
             this.queue.delete(guild.id);
             return;
@@ -156,3 +156,16 @@ module.exports = class ytdltie {
     }
 
 }
+
+/* 
+TODO:
+make better error handling and logging
+completely fix the disconnect issue
+(See if we can get the ytdl errors to show in console so we can see exactly what failed)
+add playlist features, play from playlist, create playlist, add to playlist, delete playlist, add queue to playlist etc.
+
+**Idea from forum and its a good one:**
+It's my understanding that the higher the highWaterMark, the more it downloads, so maybe just double the value. 
+There might be a way to use the info return value to calculate the video size so when you go to download it with the highWaterMark, 
+you can give an accurate value.
+*/

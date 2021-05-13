@@ -1,5 +1,7 @@
 const ytdltie = require('./commands/ytdltie.js');
 const Discord = require('discord.js');
+const fs = require('fs');
+const today = new Date();
 const {
     prefix,
     token,
@@ -46,6 +48,13 @@ async function commandHandler(command,args,message){
             MusicHandler.shuffle(message);
         }
     } catch(err) {
-        console.log(err);
+        var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+        var time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
+        var serverInfo = "Author: " + message.author + "Server: " + message.guild.id;
+        var error = '\n' + date + " " + time + ' ' + serverInfo + '\n' + err + '\n';
+        fs.appendFile('./Logs/' + date + '.txt', error, function (err2) {
+            if (err) console.log("Log failed to log...");
+            else console.log("Error handled and saved to log at: " + date + " " + time);
+        });
     }
 }
