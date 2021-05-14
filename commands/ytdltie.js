@@ -151,7 +151,9 @@ module.exports = class ytdltie {
         const voiceChannel = message.member.voice.channel;
         const server_queue = this.queue.get(message.guild.id);
         if(!voiceChannel || server_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first.");
-        server_queue.connection.dispatcher.resume()
+        server_queue.connection.dispatcher.pause(true);
+        server_queue.connection.dispatcher.resume();
+        server_queue.connection.dispatcher.resume();
 
         message.channel.send("▶️ Unpaused the song!");
     }
@@ -179,9 +181,9 @@ module.exports = class ytdltie {
 /* 
 TODO:
 make better error handling and logging
-completely fix the disconnect issue
+completely fix the disconnect issue - Seems to be fixed.
 (See if we can get the ytdl errors to show in console so we can see exactly what failed)
-Add pause and play!!
+Add pause and unpause - DONE!
 add playlist features, play from playlist, create playlist, add to playlist, delete playlist, add queue to playlist etc.
 
 **Idea from forum and its a good one:**
