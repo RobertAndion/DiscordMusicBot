@@ -26,34 +26,46 @@ client.on('message', async message => { // Main event handler for all messages.
 
 async function commandHandler(command,args,message){
     try {
-        if(command == 'queue'){
+        if(command == 'queue' || command == 'q'){
             if(args.length > 0)
                 await MusicHandler.viewQueue(message,args[0])
             else
                 await MusicHandler.viewQueue(message)
         }
-        else if(command == 'play') { // make this into a function later with more error and permission handling.
+        else if(command == 'play' || command == 'p') { // make this into a function later with more error and permission handling.
             if(args.length == 0) return message.channel.send("No song name given.");
-            song = await MusicHandler.getSong(args.join(' '))
-            if(!song)
-                message.channel.send("failed to play the song.")
-            else
-            await MusicHandler.play(message,song)
+            try{
+                song = await MusicHandler.getSong(args.join(' '))
+                if(!song)
+                    message.channel.send("No song with that name/link was found.")
+                else
+                    await MusicHandler.play(message,song)
+            } catch(err) {
+                message.channel.send("Video unavailable.")
+                throw err;
+            }
         }else if(command == 'skip') {
             if(args.length > 0)
-                MusicHandler.skip(message, args[0]) // Given skip amount
+                await MusicHandler.skip(message, args[0]) // Given skip amount
             else
-                MusicHandler.skip(message) // Default to 1
+                await MusicHandler.skip(message) // Default to 1
         } else if(command == 'shuffle'){
-            MusicHandler.shuffle(message);
+            await MusicHandler.shuffle(message);
+        } else if(command == 'pause' || command == 'ps'){
+            await MusicHandler.pause(message);
+        } else if (command == 'unpause' || command == 'up'){
+            await MusicHandler.unpause(message);
+        } else {
+            message.channel.send("Erm.. what?");
         }
     } catch(err) {
         var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
         var time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
-        var serverInfo = "Author: " + message.author + "Server: " + message.guild.id;
-        var error = '\n' + date + " " + time + ' ' + serverInfo + '\n' + err + '\n';
+        var serverInfo = "Author: " + message.author + " " + "Server: " + message.guild.id;
+        var authorArgs = "Command: " + command + " " + ' Args: ' + args;
+        var error = '\n' + date + " " + time + ' ' + serverInfo + '\n' + authoerArgs + '\n' + err + '\n';
         fs.appendFile('./Logs/' + date + '.txt', error, function (err2) {
-            if (err) console.log("Log failed to log...");
+            if (err2) console.log("Log failed to log..." + err2);
             else console.log("Error handled and saved to log at: " + date + " " + time);
         });
     }

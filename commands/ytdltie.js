@@ -137,6 +137,23 @@ module.exports = class ytdltie {
         message.channel.send("Shuffle Complete.");
     }
 
+    async pause(message) {
+        const voiceChannel = message.member.voice.channel;
+        const server_queue = this.queue.get(message.guild.id);
+        if(!voiceChannel || server_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first.");
+        server_queue.connection.dispatcher.pause();
+        message.channel.send("⏸️ Paused the song!");
+    }
+
+    async unpause(message) {
+        const voiceChannel = message.member.voice.channel;
+        const server_queue = this.queue.get(message.guild.id);
+        if(!voiceChannel || server_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first.");
+        server_queue.connection.dispatcher.resume()
+
+        message.channel.send("▶️ Unpaused the song!");
+    }
+
     async video_player(guild, song)  {
         const song_queue = this.queue.get(guild.id);
         if(!song) { 
@@ -162,6 +179,7 @@ TODO:
 make better error handling and logging
 completely fix the disconnect issue
 (See if we can get the ytdl errors to show in console so we can see exactly what failed)
+Add pause and play!!
 add playlist features, play from playlist, create playlist, add to playlist, delete playlist, add queue to playlist etc.
 
 **Idea from forum and its a good one:**
