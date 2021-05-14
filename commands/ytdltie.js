@@ -105,7 +105,9 @@ module.exports = class ytdltie {
                 current += i + ": " +songlist[i]["title"] + '\n';
             }
         }
-        pages.push(current);
+        if(current.length > 0)
+            pages.push(current);
+        
         // Create the embed package to send.
         let pageSafe = 0;
         if (page >= 1 && page <= pages.length)

@@ -63,7 +63,7 @@ async function commandHandler(command,args,message){
         var time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
         var serverInfo = "Author: " + message.author + " " + "Server: " + message.guild.id;
         var authorArgs = "Command: " + command + " " + ' Args: ' + args;
-        var error = '\n' + date + " " + time + ' ' + serverInfo + '\n' + authoerArgs + '\n' + err + '\n';
+        var error = '\n' + date + " " + time + ' ' + serverInfo + '\n' + authorArgs + '\n' + err + '\n';
         fs.appendFile('./Logs/' + date + '.txt', error, function (err2) {
             if (err2) console.log("Log failed to log..." + err2);
             else console.log("Error handled and saved to log at: " + date + " " + time);
