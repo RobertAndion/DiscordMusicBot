@@ -55,6 +55,8 @@ async function commandHandler(command,args,message){
             await MusicHandler.pause(message);
         } else if (command == 'unpause' || command == 'up'){
             await MusicHandler.unpause(message);
+        } else if(command == 'help' || command == 'h') {
+            await MusicHandler.help(message);
         } else {
             message.channel.send("Erm.. what?");
         }

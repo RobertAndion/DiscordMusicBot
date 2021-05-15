@@ -181,6 +181,22 @@ module.exports = class ytdltie {
         await song_queue.text_channel.send(`Now playing **${song.title}**`); // Customizable
     }
 
+    async help(message) {
+        //Should probably work from any voice channel- therefore I didn't include the check
+        const embed = new this.Discord.MessageEmbed();
+            embed.setTitle("JukeBot Commands");
+            embed.setDescription("! tells me you're talking to me :)");
+            embed.addField("!play or !p", "Play a song. Extra songs will be added to a queue", false);
+            embed.addField("!skip x", "Skips the next song, or an optional amount of songs");
+            embed.addField("!queue or !q", "Displays the current songs in queue");
+            embed.addField("!shuffle", "Shuffles the current queue");
+            embed.addField("!pause or !ps", "Pauses the current song");
+            embed.addField("!unpause or !up", "Unpauses the current song");
+            embed.addField("!help", "Call me again! :)");
+
+
+        message.channel.send(embed);
+    }
 }
 
 /* 
