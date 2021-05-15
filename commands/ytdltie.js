@@ -144,7 +144,7 @@ module.exports = class ytdltie {
         const server_queue = this.queue.get(message.guild.id);
         if(!voiceChannel || server_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first.");
         if(server_queue.connection.dispatcher.pausedSince) return message.channel.send("Song is already paused!"); // Handle double pause
-        
+
         server_queue.connection.dispatcher.pause();
         message.channel.send("⏸️ Paused the song!");
     }
@@ -154,7 +154,7 @@ module.exports = class ytdltie {
         const server_queue = this.queue.get(message.guild.id);
         if(!voiceChannel || server_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first.");
         if(!server_queue.connection.dispatcher.pausedSince) return message.channel.send("No music is currently paused"); // Handle call on unpaused.
-        
+        // This is a weird but required work around for the unpause situation on Node version 12 (supposed to be fixed on 14 but we do not want to migrate)
         server_queue.connection.dispatcher.pause(true);
         server_queue.connection.dispatcher.resume();
         server_queue.connection.dispatcher.resume();
