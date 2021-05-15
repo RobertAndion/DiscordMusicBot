@@ -140,17 +140,30 @@ module.exports = class ytdltie {
     }
 
     async pause(message) {
+
+
         const voiceChannel = message.member.voice.channel;
         const server_queue = this.queue.get(message.guild.id);
         if(!voiceChannel || server_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first.");
+
+        if(server_queue.connection.dispatcher.paused) {//checks if paused
+            message.channel.send("Can't repause the pause");
+            return;
+        }
         server_queue.connection.dispatcher.pause();
         message.channel.send("⏸️ Paused the song!");
+
+        
     }
 
     async unpause(message) {
         const voiceChannel = message.member.voice.channel;
         const server_queue = this.queue.get(message.guild.id);
         if(!voiceChannel || server_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first.");
+        /*if(!server_queue.connection.dispatcher.paused) {//checks if unpaused
+            message.channel.send("No music is currently paused");
+            return;
+        } */
         server_queue.connection.dispatcher.pause(true);
         server_queue.connection.dispatcher.resume();
         server_queue.connection.dispatcher.resume();

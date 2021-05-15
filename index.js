@@ -64,6 +64,17 @@ async function commandHandler(command,args,message){
         var serverInfo = "Author: " + message.author + " " + "Server: " + message.guild.id;
         var authorArgs = "Command: " + command + " " + ' Args: ' + args;
         var error = '\n' + date + " " + time + ' ' + serverInfo + '\n' + authorArgs + '\n' + err + '\n';
+
+        //the following code is ensuring the Logs directory exists
+        const dirName = './Logs';
+        if (!fs.existsSync(dirName)) { //check if the directory exists 
+            fs.mkdir(dirName, (err) => { //creates directory
+                if (err) { //Error only thrown if directory already exists-> shouldn't happen
+                    throw err;
+                }
+            });
+        }
+        
         fs.appendFile('./Logs/' + date + '.txt', error, function (err2) {
             if (err2) console.log("Log failed to log..." + err2);
             else console.log("Error handled and saved to log at: " + date + " " + time);
