@@ -71,6 +71,7 @@ module.exports = class ytdltie {
         const song_queue = this.queue.get(message.guild.id);
         if(!song_queue) return message.channel.send("Nothing playing!"); // Check for empty queue first.
         if(song_queue.voice_channel != voiceChannel || !voiceChannel) return message.channel.send("Please join the same voice channel as me.");
+        if(isNaN(amount)) return message.channel.send("Please enter a valid integer (no decimals or characters).");
         if(amount <= 0) return message.channel.send("Please enter a valid skip amount. (>=1)");
         amount--;
         while(amount > 0){
