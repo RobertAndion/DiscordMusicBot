@@ -57,6 +57,16 @@ async function commandHandler(command,args,message){
             await MusicHandler.unpause(message);
         } else if(command == 'help' || command == 'h') {
             await MusicHandler.help(message);
+        } else if (command == 'createplaylist' || command == 'cpl'){
+            if(args.length > 0)
+                await MusicHandler.create_playlist(message,args.join(' '));
+            else
+                message.channel.send("Please enter a playlist name");
+        } else if (command == 'addtoplaylist' || command == 'atp'){
+            if(args.length > 0)
+                await MusicHandler.add_to_playlist(message,args.join(' '));
+            else
+                message.channel.send("Please enter a playlist name");
         } else {
             message.channel.send("Erm.. what?");
         }

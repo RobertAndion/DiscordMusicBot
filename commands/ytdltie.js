@@ -1,5 +1,6 @@
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
+const fs = require('fs');
 /*
 Start of an object wrapper for the ytdl class and a queue system for a nodeJS music bot.
 This is a core file for the bot but also acts as an interface to the ytdl code and simplifies it in
@@ -129,6 +130,7 @@ module.exports = class ytdltie {
     async shuffle(message) {
         const voiceChannel = message.member.voice.channel;
         const server_queue = this.queue.get(message.guild.id);
+        if(!server_queue) return message.channel.send("Nothing is currently playing.");
         if(!voiceChannel || server_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first.");
         const songlist = server_queue.songs;
         for(let i = 1; i < songlist.length; i++) {
@@ -143,6 +145,7 @@ module.exports = class ytdltie {
     async pause(message) {
         const voiceChannel = message.member.voice.channel;
         const server_queue = this.queue.get(message.guild.id);
+        if(!server_queue) return message.channel.send("Nothing is currently playing.");
         if(!voiceChannel || server_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first.");
         if(server_queue.connection.dispatcher.pausedSince) return message.channel.send("Song is already paused!"); // Handle double pause
 
@@ -153,6 +156,7 @@ module.exports = class ytdltie {
     async unpause(message) {
         const voiceChannel = message.member.voice.channel;
         const server_queue = this.queue.get(message.guild.id);
+        if(!server_queue) return message.channel.send("Nothing is currently playing.");
         if(!voiceChannel || server_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first.");
         if(!server_queue.connection.dispatcher.pausedSince) return message.channel.send("No music is currently paused"); // Handle call on unpaused.
         // This is a weird but required work around for the unpause situation on Node version 12 (supposed to be fixed on 14 but we do not want to migrate)
@@ -163,7 +167,53 @@ module.exports = class ytdltie {
         message.channel.send("▶️ Unpaused the song!");
     }
 
-    async video_player(guild, song)  {
+    async create_playlist(message,playlistname) { // For now lets save by title only and worry about optimization later.
+        const server_queue = this.queue.get(message.guild.id);
+        if(!server_queue) return message.channel.send("Nothing is currently playing.");
+        const dirName = './Playlists/';
+        fs.readFile(dirName + message.author + '.json','utf8',(err,data) => { // See if we can declare playlist outside of here to resolve the scope issue.
+            if(err) {
+                var playlist = new Map();
+                playlist[playlistname] = [server_queue.songs[0].title];
+                this.writePlaylist(dirName,message,playlist,playlistname);
+            } else { // existing playlist file
+                var playlist = JSON.parse(data);
+                playlist[playlistname] = [server_queue.songs[0].title];
+                this.writePlaylist(dirName,message,playlist,playlistname);
+            }
+        }); 
+    }
+
+    async add_to_playlist(message,playlistname) { // For now lets save by title only and worry about optimization later. WORK IN PROGRESS !!!
+        const server_queue = this.queue.get(message.guild.id);
+        if(!server_queue) return message.channel.send("Nothing is currently playing.");
+        const dirName = './Playlists/';
+        fs.readFile(dirName + message.author + '.json','utf8',(err,data) => { // See if we can declare playlist outside of here to resolve the scope issue.
+            if(err) {
+                return message.channel.send("You do not have any playlists, create one with createplaylist");
+            } else { // existing playlist file
+                var playlists = JSON.parse(data);
+                try{
+                    var playlist = playlists[playlistname];
+                    playlist.push(server_queue.songs[0].title);
+                    playlists[playlistname] = playlist;
+                    this.writePlaylist(dirName,message,playlist,playlistname);
+                    return message.channel.send(server_queue.songs[0].title + " was added to " + playlistname + "!");
+                } catch{
+                    return message.channel.send("Playlist: " + playlistname +" does not exist.");
+                }
+            }
+        }); 
+    }
+
+    async writePlaylist(dirName,message,playlist,playlistname) { // Helper function to write out to json
+        fs.writeFile(dirName + message.author + '.json', JSON.stringify(playlist, null, 4), function (err) { // Write the map to a JSON file.
+            if (err) throw new Error("Failed to write to playlist, Error: " + err);
+        });
+        return message.channel.send("Successfully created " + playlistname +"!");
+    }
+
+    async video_player(guild, song)  { // Helper/main music loop
         const song_queue = this.queue.get(guild.id);
         if(!song) { 
             song_queue.voice_channel.leave();

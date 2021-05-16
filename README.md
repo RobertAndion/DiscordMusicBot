@@ -62,6 +62,7 @@ optional to view these additiona pages. (First page is default.)
 If the bot is playing and the envoker is in the same voice channel as the bot, this command
 will shuffle all songs in the servers queue.
 
+For a version in python3 try: https://github.com/RobertAndion/Discord_Music_Bot
 ### Future:
 We are moving towards a stable version of this bot with more error checking/handling and making it less prone to failure.
 We soon plan to add a playlist system in which you can store and load playlists into the bots queue.
