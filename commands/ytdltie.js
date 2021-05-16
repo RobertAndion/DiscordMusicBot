@@ -175,11 +175,13 @@ module.exports = class ytdltie {
             if(err) {
                 var playlist = new Map();
                 playlist[playlistname] = [server_queue.songs[0].title];
-                this.writePlaylist(dirName,message,playlist,playlistname);
+                this.writePlaylist(dirName,message,playlist);
+                message.channel.send("Successfully created " + playlistname +"!");
             } else { // existing playlist file
                 var playlist = JSON.parse(data);
                 playlist[playlistname] = [server_queue.songs[0].title];
-                this.writePlaylist(dirName,message,playlist,playlistname);
+                this.writePlaylist(dirName,message,playlist);
+                message.channel.send("Successfully created " + playlistname +"!");
             }
         }); 
     }
@@ -197,7 +199,7 @@ module.exports = class ytdltie {
                     var playlist = playlists[playlistname];
                     playlist.push(server_queue.songs[0].title);
                     playlists[playlistname] = playlist;
-                    this.writePlaylist(dirName,message,playlist,playlistname);
+                    this.writePlaylist(dirName,message,playlists);
                     return message.channel.send(server_queue.songs[0].title + " was added to " + playlistname + "!");
                 } catch{
                     return message.channel.send("Playlist: " + playlistname +" does not exist.");
@@ -206,12 +208,11 @@ module.exports = class ytdltie {
         }); 
     }
 
-    async writePlaylist(dirName,message,playlist,playlistname) { // Helper function to write out to json
+    async writePlaylist(dirName,message,playlist) { // Helper function to write out to json
         fs.writeFile(dirName + message.author + '.json', JSON.stringify(playlist, null, 4), function (err) { // Write the map to a JSON file.
             if (err) throw new Error("Failed to write to playlist, Error: " + err);
         });
-        return message.channel.send("Successfully created " + playlistname +"!");
-    }
+    } // Could have this return bool and check it. If bool is false we know we failed, optional.
 
     async video_player(guild, song)  { // Helper/main music loop
         const song_queue = this.queue.get(guild.id);
