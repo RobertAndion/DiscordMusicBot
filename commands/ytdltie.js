@@ -1,6 +1,7 @@
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
 const fs = require('fs');
+const { title } = require('process');
 /*
 Start of an object wrapper for the ytdl class and a queue system for a nodeJS music bot.
 This is a core file for the bot but also acts as an interface to the ytdl code and simplifies it in
@@ -58,6 +59,7 @@ module.exports = class ytdltie {
             } catch (err) {
                 this.queue.delete(message.guild.id);
                 console.log(err)
+                return message.channel.send("Failed to connect and play.");
                 //throw new Error("Connection failed, or invalid queue.")
             }
         } else {
@@ -208,6 +210,154 @@ module.exports = class ytdltie {
         }); 
     }
 
+    async list_playlists(message, page = 1) { // For now lets save by title only and worry about optimization later. WORK IN PROGRESS !!!
+        const dirName = './Playlists/';
+        fs.readFile(dirName + message.author + '.json','utf8',(err,data) => { // See if we can declare playlist outside of here to resolve the scope issue.
+            if(err) {
+                return message.channel.send("You do not have any playlists, create one with createplaylist");
+            } else { // existing playlist file
+                var playlists = JSON.parse(data);
+                const pages = [];
+                let current = "";
+                let pnames = Object.keys(playlists);
+                for(let i = 0; i < pnames.length; i++){
+                    
+                    if(i % 10 == 0 && i != 0){
+                        pages.push(current)
+                        current = "";
+                        current += (i + 1) + ": " +pnames[i] + '\n';
+                    } else {
+                        current += (i + 1) + ": " +pnames[i] + '\n';
+                    }
+                }
+                if(current.length > 0)
+                    pages.push(current);
+                
+                // Create the embed package to send.
+                let pageSafe = 0;
+                if (page >= 1 && page <= pages.length)
+                    pageSafe = page;
+                else if (page < 1)
+                    pageSafe = 1;
+                else if (page > pages.length)
+                    pageSafe = pages.length;
+        
+                const embed = new this.Discord.MessageEmbed();
+                    const name = message.member.user.tag.split('#');
+                    embed.setTitle(name[0] + "'s Playlists");
+                    embed.setDescription(pages[pageSafe - 1]);
+                    embed.setFooter("Page: " + pageSafe + "/" + pages.length);
+                message.channel.send(embed);
+
+
+               /* for(const key in playlists) { // add wrapping system like in queue later. Maybe build paged embed function that returns an embed.. for now reuse code.
+                    out += key + '\n';
+                }*/
+                //return message.channel.send(out);
+            }
+        }); 
+    }
+
+    async view_playlist(message, playlist) { // For now lets save by title only and worry about optimization later. WORK IN PROGRESS !!!
+        const dirName = './Playlists/';
+        fs.readFile(dirName + message.author + '.json','utf8',(err,data) => { // See if we can declare playlist outside of here to resolve the scope issue.
+            if(err) {
+                return message.channel.send("You do not have any playlists, create one with createplaylist");
+            } else { // existing playlist file
+                var playlists = JSON.parse(data);
+                try {
+                    let songs = playlists[playlist];
+                    let current = "";
+                    let i = 0; // Changed scope to outer so that we can access it in the final if
+                    for(; i < songs.length; i++){
+                        if(i % 10 == 0 && i != 0){
+                            // Create the embed package to send.
+                            const embed = new this.Discord.MessageEmbed();
+                                const name = message.member.user.tag.split('#');
+                                if(i == 10)
+                                    embed.setTitle(playlist);
+                                embed.setDescription(current);
+                                embed.setFooter("JukeBot 🎜");
+                            message.channel.send(embed);
+                            current = "";
+                            current += (i + 1) + ": " +songs[i] + '\n';
+                        } else {
+                            current += (i + 1) + ": " +songs[i] + '\n';
+                        }
+                    }
+                    if(current.length > 0){ // Final page flush
+                        // Create the embed package to send.
+                        const embed = new this.Discord.MessageEmbed();
+                            const name = message.member.user.tag.split('#');
+                            if(i < 10)
+                                embed.setTitle(playlist);
+                            embed.setDescription(current);
+                            embed.setFooter("JukeBot 🎜");
+                        message.channel.send(embed);
+                    }
+                } catch (err) {
+                    return message.channel.send("Sorry you don't have a playlist named: " + playlist);
+                }
+            }
+        }); 
+    }
+
+    async play_from_list(message, playlist) { // For now lets save by title only and worry about optimization later. WORK IN PROGRESS !!!
+        const dirName = './Playlists/';
+        const myScope = this;
+        fs.readFile(dirName + message.author + '.json','utf8',async function(err,data) { // See if we can declare playlist outside of here to resolve the scope issue.
+            if(err) {
+                return message.channel.send("You do not have any playlists, create one with createplaylist");
+            } else { // existing playlist file
+                var playlists = JSON.parse(data);
+                try {
+                    let stringSongs = playlists[playlist]; // psongs = playlist songs, not queue songs.
+                    let psongs = []; // Generate an array of song objects
+                    for(let i = 0; i < stringSongs.length; i++){
+                        let song = await myScope.getSong(stringSongs[i])
+                        if(song != null)
+                            psongs.push(song)
+                        else 
+                            message.channel.send("Failed to find song for: " + song);
+                    }
+                    const voiceChannel = message.member.voice.channel;
+                    if(!voiceChannel) return message.channel.send("Please join a voice channel first.");
+                    const server_queue = myScope.queue.get(message.guild.id);
+                    if(!server_queue){ // More complicated part.
+                        const queue_constructor = {
+                            voice_channel: voiceChannel,
+                            text_channel: message.channel,
+                            connection: null,
+                            songs: []
+                        }
+                        myScope.queue.set(message.guild.id, queue_constructor);
+                        queue_constructor.songs.push(psongs[0]); // Eventually worry about case where there is no songs, outer try catch will handle for now.
+            
+                        try {
+                            const connection = await voiceChannel.join() 
+                            queue_constructor.connection = connection;
+                            myScope.video_player(message.guild, queue_constructor.songs[0]);
+                            const server_queue_inner = myScope.queue.get(message.guild.id);
+                            psongs.shift();
+                            server_queue_inner.songs.push(...psongs); // after playing the first song add the rest to queue
+                            return message.channel.send(`**${playlist}** now playing!`); // Customizable
+                        } catch (err) {
+                            myScope.queue.delete(message.guild.id);
+                            return message.channel.send("Failed to connect and play.");
+                        }
+                    } else {
+                        if(server_queue.voice_channel != voiceChannel) return message.channel.send("Please join the same voice channel as me.");
+                        server_queue.songs.push(...psongs);
+                        return message.channel.send(`**${playlist}** added to queue!`); // Customizable
+                    }                
+                } catch (err) {
+                    console.log(err);
+                    return message.channel.send("Sorry you don't have a playlist named: " + playlist);
+                }
+            }
+        }); 
+    }
+    
     async writePlaylist(dirName,message,playlist) { // Helper function to write out to json
         fs.writeFile(dirName + message.author + '.json', JSON.stringify(playlist, null, 4), function (err) { // Write the map to a JSON file.
             if (err) throw new Error("Failed to write to playlist, Error: " + err);

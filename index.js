@@ -6,6 +6,7 @@ const {
     prefix,
     token,
 } = require('./config.json');
+const { createContext } = require('vm');
 /*
 Main file for running the bot, contains the command handler, ytdltie object (MusicHandler) and error handling.
 */
@@ -55,8 +56,6 @@ async function commandHandler(command,args,message){
             await MusicHandler.pause(message);
         } else if (command == 'unpause' || command == 'up'){
             await MusicHandler.unpause(message);
-        } else if(command == 'help' || command == 'h') {
-            await MusicHandler.help(message);
         } else if (command == 'createplaylist' || command == 'cpl'){
             if(args.length > 0)
                 await MusicHandler.create_playlist(message,args.join(' '));
@@ -67,6 +66,23 @@ async function commandHandler(command,args,message){
                 await MusicHandler.add_to_playlist(message,args.join(' '));
             else
                 message.channel.send("Please enter a playlist name");
+        } else if(command == 'listplaylists' || command == 'lpl') {
+            if(args.length > 0)
+                await MusicHandler.list_playlists(message, args[0]);
+            else
+                await MusicHandler.list_playlists(message);
+        } else if(command == 'viewplaylist' || command == 'vpl') {
+            if(args.length > 0)
+                await MusicHandler.view_playlist(message, args.join(' '));
+            else
+                return message.channel.send("Please specify the name of the playlist.");
+        } else if(command == 'playfromlist' || command == 'playl' || command == 'pl') {
+            if(args.length > 0)
+                await MusicHandler.play_from_list(message, args.join(' '));
+            else
+                return message.channel.send("Please specify the name of the playlist.");
+        } else if(command == 'help' || command == 'h') { // Keep help as last command.
+            await MusicHandler.help(message);
         } else {
             message.channel.send("Erm.. what?");
         }
