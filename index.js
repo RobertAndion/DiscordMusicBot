@@ -90,6 +90,11 @@ async function commandHandler(command,args,message){
             }
             else
                 return message.channel.send("Please specify the song number and name of the playlist");
+        } else if(command == 'deleteplaylist' || command == 'deletelist' || command == 'dl') {
+            if(args.length > 0) 
+                await MusicHandler.delete_playlist(message, args.join(' '));
+            else
+                return message.channel.send("Please specify the name of the playlist to delete.");
         } else if(command == 'help' || command == 'h') { // Keep help as last command.
             await MusicHandler.help(message);
         } else {

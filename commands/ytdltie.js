@@ -220,6 +220,8 @@ module.exports = class ytdltie {
                 const pages = [];
                 let current = "";
                 let pnames = Object.keys(playlists);
+                if(pnames.length == 0)
+                    return message.channel.send("You do not have any playlists, create one with createplaylist");
                 for(let i = 0; i < pnames.length; i++){
                     
                     if(i % 10 == 0 && i != 0){
@@ -373,6 +375,25 @@ module.exports = class ytdltie {
                     playlists[playlistname] = stringSongs;
                     myScope.writePlaylist(dirName,message,playlists);
                     return message.channel.send(removedSong + " was removed from " + playlistname + "!");
+                } catch (err) {
+                    return message.channel.send("Sorry you don't have a playlist named: " + playlistname);
+                }
+            }
+        });
+    }
+
+    async delete_playlist(message, playlistname) {
+        const dirName = './Playlists/';
+        const myScope = this;
+        fs.readFile(dirName + message.author + '.json','utf8',async function(err,data) { // See if we can declare playlist outside of here to resolve the scope issue. (if we had it outside of here then modified it it wouldnt work.)
+            if(err) 
+                return message.channel.send("You do not have any playlists, create one with createplaylist");
+            else {
+                var playlists = JSON.parse(data); //parse user's data file
+                try {
+                    delete playlists[playlistname]
+                    myScope.writePlaylist(dirName,message,playlists);
+                    return message.channel.send(playlistname + " was removed from from your playlists!");
                 } catch (err) {
                     return message.channel.send("Sorry you don't have a playlist named: " + playlistname);
                 }
