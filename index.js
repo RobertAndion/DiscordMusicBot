@@ -81,6 +81,15 @@ async function commandHandler(command,args,message){
                 await MusicHandler.play_from_list(message, args.join(' '));
             else
                 return message.channel.send("Please specify the name of the playlist.");
+        } else if(command == 'deletefromlist' || command == 'delsong' || command == 'dfl') { 
+            if(args.length > 1) {
+                if(!isNaN(args[0]) && args[0] > 0)
+                    await MusicHandler.del_from_list(message, args[0], args[1]);
+                else
+                    return message.channel.send("Please specify command in the format: dfl #songnumber playlistname. The song number must be > 0.");
+            }
+            else
+                return message.channel.send("Please specify the song number and name of the playlist");
         } else if(command == 'help' || command == 'h') { // Keep help as last command.
             await MusicHandler.help(message);
         } else {

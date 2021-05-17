@@ -305,7 +305,7 @@ module.exports = class ytdltie {
     async play_from_list(message, playlist) { // For now lets save by title only and worry about optimization later. WORK IN PROGRESS !!!
         const dirName = './Playlists/';
         const myScope = this;
-        fs.readFile(dirName + message.author + '.json','utf8',async function(err,data) { // See if we can declare playlist outside of here to resolve the scope issue.
+        fs.readFile(dirName + message.author + '.json','utf8',async function(err,data) { // See if we can declare playlist outside of here to resolve the scope issue. (if we had it outside of here then modified it it wouldnt work.)
             if(err) {
                 return message.channel.send("You do not have any playlists, create one with createplaylist");
             } else { // existing playlist file
@@ -356,6 +356,28 @@ module.exports = class ytdltie {
                 }
             }
         }); 
+    }
+
+    async del_from_list(message, songnumber, playlistname) {
+        const dirName = './Playlists/';
+        const myScope = this;
+        fs.readFile(dirName + message.author + '.json','utf8',async function(err,data) { // See if we can declare playlist outside of here to resolve the scope issue. (if we had it outside of here then modified it it wouldnt work.)
+            if(err) 
+                return message.channel.send("You do not have any playlists, create one with createplaylist");
+            else {
+                var playlists = JSON.parse(data); //parse user's data file
+                try {
+                    let stringSongs = playlists[playlistname];
+                    if(stringSongs.length < songnumber) return message.channel.send("This playlist is not that long!"); //prevents out of bounds
+                    var removedSong = stringSongs.splice(songnumber-1, 1); //TODO: unsure if this is the most effective way of doing this
+                    playlists[playlistname] = stringSongs;
+                    myScope.writePlaylist(dirName,message,playlists);
+                    return message.channel.send(removedSong + " was removed from " + playlistname + "!");
+                } catch (err) {
+                    return message.channel.send("Sorry you don't have a playlist named: " + playlistname);
+                }
+            }
+        });
     }
     
     async writePlaylist(dirName,message,playlist) { // Helper function to write out to json
