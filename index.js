@@ -96,7 +96,7 @@ async function commandHandler(command,args,message){
             else
                 return message.channel.send("Please specify the name of the playlist to delete.");
         } else if(command == 'help' || command == 'h') { // Keep help as last command.
-            await MusicHandler.help(message);
+            await MusicHandler.help(message, args.join(' '));
         } else {
             message.channel.send("Erm.. what?");
         }

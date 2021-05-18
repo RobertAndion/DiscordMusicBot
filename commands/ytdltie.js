@@ -294,7 +294,7 @@ module.exports = class ytdltie {
                             if(i < 10)
                                 embed.setTitle(playlist);
                             embed.setDescription(current);
-                            embed.setFooter("JukeBot 🎜");
+                            embed.setFooter("JukeBot 🎶");
                         message.channel.send(embed);
                     }
                 } catch (err) {
@@ -425,21 +425,42 @@ module.exports = class ytdltie {
         await song_queue.text_channel.send(`Now playing **${song.title}**`); // Customizable
     }
 
-    async help(message) {
+    async help(message, args) {
         //Should probably work from any voice channel- therefore I didn't include the check
+        const playlistEmbed = new this.Discord.MessageEmbed();
+            playlistEmbed.setTitle("JukeBot Playlist Commands");
+            playlistEmbed.setDescription("! tells me you're talking to me :)");
+            playlistEmbed.addField("!createplaylist (playlistname) or !cpl", "Creates a playlist, with currently playing song");
+            playlistEmbed.addField("!playfromlist (playlistname)  or playl or pl", "Add a playlist to the current queue or start playing");
+            playlistEmbed.addField("addtoplaylist (playlistname)  or atp", "Adds currently playing song to playlist")
+            playlistEmbed.addField("!listplaylists or lpl", "List all of your playlists");
+            playlistEmbed.addField("!viewplaylist (playlistname) or vpl", "View the songs in a playlist");
+            playlistEmbed.addField("!deletefromlist (song number) (playlistname) or delsong or dfl", "Deletes song # from playlist x");
+            playlistEmbed.addField("!deleteplaylist (playlistname) or deletelist or dl", "Deletes an entire playlist");
+            playlistEmbed.setFooter("JukeBot 🎶")
+
+        if(args == "playlist") {
+            message.channel.send(playlistEmbed)
+            return;
+        }
+        
         const embed = new this.Discord.MessageEmbed();
-            embed.setTitle("JukeBot Commands");
+            embed.setTitle("JukeBot Regular Commands");
             embed.setDescription("! tells me you're talking to me :)");
-            embed.addField("!play or !p", "Play a song. Extra songs will be added to a queue", false);
-            embed.addField("!skip x", "Skips the next song, or an optional amount of songs");
+            embed.addField("!play (song name) or !p", "Play a song. Extra songs will be added to a queue", false);
+            embed.addField("!skip (OPTIONAL number of songs)", "Skips the next song, or an optional amount of songs");
             embed.addField("!queue or !q", "Displays the current songs in queue");
             embed.addField("!shuffle", "Shuffles the current queue");
             embed.addField("!pause or !ps", "Pauses the current song");
             embed.addField("!unpause or !up", "Unpauses the current song");
             embed.addField("!help", "Call me again! :)");
+            embed.addField("!help playlist", "More information on playlists");
+            embed.setFooter("JukeBot 🎶")
 
 
+        
         message.channel.send(embed);
+        message.channel.send(playlistEmbed)
     }
 }
 
