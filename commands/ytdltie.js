@@ -173,7 +173,7 @@ module.exports = class ytdltie {
         const server_queue = this.queue.get(message.guild.id);
         if(!server_queue) return message.channel.send("Nothing is currently playing.");
         const dirName = './Playlists/';
-        fs.readFile(dirName + message.author + '.json','utf8',(err,data) => { // See if we can declare playlist outside of here to resolve the scope issue.
+        fs.readFile(dirName + message.author + '.json','utf8',(err,data) => { // See if we can declare playlist outside of here to resolve the scope issue.(if we had it outside of here then modified it it wouldnt work.)
             if(err) {
                 var playlist = new Map();
                 playlist[playlistname] = [server_queue.songs[0].title];
@@ -312,6 +312,7 @@ module.exports = class ytdltie {
                 var playlists = JSON.parse(data);
                 try {
                     let stringSongs = playlists[playlist]; // psongs = playlist songs, not queue songs.
+                    message.channel.send("Adding playlist to queue now. Please be patient for larger playlists.");
                     let psongs = []; // Generate an array of song objects
                     for(let i = 0; i < stringSongs.length; i++){
                         let song = await myScope.getSong(stringSongs[i])
@@ -351,7 +352,6 @@ module.exports = class ytdltie {
                         return message.channel.send(`**${playlist}** added to queue!`); // Customizable
                     }                
                 } catch (err) {
-                    console.log(err);
                     return message.channel.send("Sorry you don't have a playlist named: " + playlist);
                 }
             }
