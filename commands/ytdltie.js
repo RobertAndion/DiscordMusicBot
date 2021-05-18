@@ -56,6 +56,7 @@ module.exports = class ytdltie {
                 const connection = await voiceChannel.join()
                 queue_constructor.connection = connection;
                 this.video_player(message.guild, queue_constructor.songs[0]);
+                message.channel.send(`Now playing **${song.title}**`); // Customizable
             } catch (err) {
                 this.queue.delete(message.guild.id);
                 console.log(err)
@@ -422,7 +423,7 @@ module.exports = class ytdltie {
             song_queue.songs.shift();
             this.video_player(guild, song_queue.songs[0])
         })
-        await song_queue.text_channel.send(`Now playing **${song.title}**`); // Customizable
+      //  await song_queue.text_channel.send(`Now playing **${song.title}**`); // Removed here to avoid tons of prints.
     }
 
     async help(message, args) {
