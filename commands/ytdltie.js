@@ -24,7 +24,7 @@ module.exports = class ytdltie {
     async getSong(songname) { // Takes a string song name or string link
         if(ytdl.validateURL(songname)) { // This will return a null if a song is not found, other wise a song object.
             const song_info = await ytdl.getInfo(songname);
-            return { title: song_info.videoDetails.title, url: song_info.videoDetails.video_url };
+            return { title: song_info.videoDetails.title, url: song_info.videoDetails.video_url, flag: false };
         } else {
             const videoFinder = async (query) => {
                 const videoResult = await ytSearch(query);
@@ -32,7 +32,7 @@ module.exports = class ytdltie {
             }
             const video = await videoFinder(songname);
             if(video) // More info can be returned from here if desired.
-                return { title: video.title, url: video.url};
+                return { title: video.title, url: video.url, flag: false};
             else
                 return null;
         }
@@ -66,7 +66,8 @@ module.exports = class ytdltie {
         } else {
             if(server_queue.voice_channel != voiceChannel) return message.channel.send("Please join the same voice channel as me.");
             server_queue.songs.push(song);
-            return message.channel.send(`**${song.title}** added to queue!`); // Customizable
+            if(!song.flag)
+                return message.channel.send(`**${song.title}** added to queue!`); // Customizable
         }        
     }
 
@@ -308,6 +309,8 @@ module.exports = class ytdltie {
     async play_from_list(message, playlist) { // For now lets save by title only and worry about optimization later. WORK IN PROGRESS !!!
         const dirName = './Playlists/';
         const myScope = this;
+        const voiceChannel = message.member.voice.channel;
+        if(!voiceChannel) return message.channel.send("Please join a voice channel first.");
         fs.readFile(dirName + message.author + '.json','utf8',async function(err,data) { // See if we can declare playlist outside of here to resolve the scope issue. (if we had it outside of here then modified it it wouldnt work.)
             if(err) {
                 return message.channel.send("You do not have any playlists, create one with createplaylist");
@@ -319,13 +322,16 @@ module.exports = class ytdltie {
                     let psongs = []; // Generate an array of song objects
                     for(let i = 0; i < stringSongs.length; i++){
                         let song = await myScope.getSong(stringSongs[i])
+                        if(i == 0 && song != null){
+                            song.flag = true;
+                            await myScope.play(message,song);
+                            continue;
+                        }
                         if(song != null)
                             psongs.push(song)
                         else 
-                            message.channel.send("Failed to find song for: " + song);
+                            message.channel.send("Failed to find song for: " + stringSongs[i]);
                     }
-                    const voiceChannel = message.member.voice.channel;
-                    if(!voiceChannel) return message.channel.send("Please join a voice channel first.");
                     const server_queue = myScope.queue.get(message.guild.id);
                     if(!server_queue){ // More complicated part.
                         const queue_constructor = {
