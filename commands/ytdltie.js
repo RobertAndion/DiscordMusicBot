@@ -407,6 +407,34 @@ module.exports = class ytdltie {
             }
         });
     }
+
+    async rename_playlist(message, oldplaylistname, newplaylistname) {
+        //Potential todo error check: if old and new playlistname are the same
+        const dirName = './Playlists/';
+        const myScope = this;
+        fs.readFile(dirName + message.author + '.json','utf8',async function(err,data) { // See if we can declare playlist outside of here to resolve the scope issue. (if we had it outside of here then modified it it wouldnt work.)
+            if(err) 
+                return message.channel.send("You do not have any playlists, create one with createplaylist");
+            else {
+                var playlists = JSON.parse(data); //parse user's data file
+                try {
+                    //Error check: if newplaylistname exists already, return error
+                    let newStringSongs = playlists[newplaylistname];
+                    if(newStringSongs)
+                        return message.channel.send(newplaylistname + " already exists! Rename to something that doesn't exist to not lose that playlist.");
+                    let stringSongs = playlists[oldplaylistname];
+                    delete playlists[oldplaylistname]
+                    playlists[newplaylistname] = stringSongs;
+                    //push in a loop
+                    myScope.writePlaylist(dirName,message,playlists);
+                    return message.channel.send(oldplaylistname + " playlist has been renamed to " + newplaylistname);
+                } catch (err) {
+
+                    return message.channel.send("Sorry you don't have a playlist named: " + oldplaylistname);
+                }
+            }
+        });
+    }
     
     async writePlaylist(dirName,message,playlist) { // Helper function to write out to json
         fs.writeFile(dirName + message.author + '.json', JSON.stringify(playlist, null, 4), function (err) { // Write the map to a JSON file.
@@ -444,6 +472,7 @@ module.exports = class ytdltie {
             playlistEmbed.addField("!viewplaylist (playlistname) or vpl", "View the songs in a playlist");
             playlistEmbed.addField("!deletefromlist (song number) (playlistname) or delsong or dfl", "Deletes song # from playlist x");
             playlistEmbed.addField("!deleteplaylist (playlistname) or deletelist or dl", "Deletes an entire playlist");
+            playlistEmbed.addField("!renameplaylist (oldplaylist) (newplaylist) or !rename or !rl", "Renames a playlist.");
             playlistEmbed.setFooter("JukeBot 🎶")
 
         if(args == "playlist") {
@@ -470,6 +499,8 @@ module.exports = class ytdltie {
         message.channel.send(playlistEmbed)
     }
 }
+
+
 
 /* 
 TODO:

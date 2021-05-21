@@ -95,11 +95,18 @@ async function commandHandler(command,args,message){
                 await MusicHandler.delete_playlist(message, args.join(' '));
             else
                 return message.channel.send("Please specify the name of the playlist to delete.");
+        } else if(command == 'renameplaylist' || command == 'rename' || command == 'rl') { 
+            if(args.length > 1) {
+                await MusicHandler.rename_playlist(message, args[0], args[1]);
+            }
+            else
+                return message.channel.send("Please specify both the old play list name, followed by the new name."); 
         } else if(command == 'help' || command == 'h') { // Keep help as last command.
             await MusicHandler.help(message, args.join(' '));
         } else {
             message.channel.send("Erm.. what?");
         }
+        
     } catch(err) {
         var date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
         var time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
