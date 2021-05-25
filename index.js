@@ -101,7 +101,13 @@ async function commandHandler(command,args,message){
             }
             else
                 return message.channel.send("Please specify both the old play list name, followed by the new name."); 
-        } else if(command == 'help' || command == 'h') { // Keep help as last command.
+        } else if(command == 'addqueuetoplaylist' || command == 'aqtp') {
+            if(args.length > 0)
+                await MusicHandler.add_queue_to_playlist(message, args.join(' '));
+            else 
+                return message.channel.send("Please specify the name of the playlist to add the queue to.");
+        } 
+        else if(command == 'help' || command == 'h') { // Keep help as last command.
             await MusicHandler.help(message, args.join(' '));
         } else {
             message.channel.send("Erm.. what?");

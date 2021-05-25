@@ -435,6 +435,37 @@ module.exports = class ytdltie {
             }
         });
     }
+
+    //only skeleton created
+    async add_queue_to_playlist(message, playlistname) {
+        //Adds the current queue to the specific playlist
+        const dirName = './Playlists/';
+        const myScope = this;
+        fs.readFile(dirName + message.author + '.json','utf8',async function(err,data) { 
+            if(err) 
+                return message.channel.send("You do not have any playlists, create one with createplaylist");
+            else {
+                var playlists = JSON.parse(data); //parse user's data file
+                try {
+                    var playlist = playlists[playlistname];
+                    const song_queue = myScope.queue.get(message.guild.id);
+                    if(!song_queue) return message.channel.send("Nothing playing."); 
+                    const songlist = song_queue.songs; //songs in queue
+
+                    for(let i = 0; i < songlist.length; i++){ //loops through every song in queue- including now playing (can change to index 1)
+                        playlist.push(songlist[i]["title"]); 
+                    }
+                    playlists[playlistname] = playlist;
+                    myScope.writePlaylist(dirName,message,playlists); //rewrite file
+                    //after writing, give feedback
+                    message.channel.send("Successfully added the queue to playlist " + playlistname);
+                } catch (err) {
+                    console.log(err);
+                    return message.channel.send("Sorry you don't have a playlist named: " + playlistname);
+                }
+            }
+        });
+    }
     
     async writePlaylist(dirName,message,playlist) { // Helper function to write out to json
         fs.writeFile(dirName + message.author + '.json', JSON.stringify(playlist, null, 4), function (err) { // Write the map to a JSON file.
@@ -465,9 +496,10 @@ module.exports = class ytdltie {
         const playlistEmbed = new this.Discord.MessageEmbed();
             playlistEmbed.setTitle("JukeBot Playlist Commands");
             playlistEmbed.setDescription("! tells me you're talking to me :)");
-            playlistEmbed.addField("!createplaylist (playlistname) or !cpl", "Creates a playlist, with currently playing song");
+            playlistEmbed.addField("!createplaylist (playlistname) or cpl", "Creates a playlist, with currently playing song");
             playlistEmbed.addField("!playfromlist (playlistname)  or playl or pl", "Add a playlist to the current queue or start playing");
-            playlistEmbed.addField("addtoplaylist (playlistname)  or atp", "Adds currently playing song to playlist")
+            playlistEmbed.addField("!addtoplaylist (playlistname)  or atp", "Adds currently playing song to playlist")
+            playlistEmbed.addField("!addqueuetoplaylist (playlistname) or aqtp", "Adds entire current queue to playlist");
             playlistEmbed.addField("!listplaylists or lpl", "List all of your playlists");
             playlistEmbed.addField("!viewplaylist (playlistname) or vpl", "View the songs in a playlist");
             playlistEmbed.addField("!deletefromlist (song number) (playlistname) or delsong or dfl", "Deletes song # from playlist x");
