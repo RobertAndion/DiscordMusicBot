@@ -281,7 +281,7 @@ module.exports = class ytdltie {
                                 if(i == 10)
                                     embed.setTitle(playlist);
                                 embed.setDescription(current);
-                                embed.setFooter("JukeBot 🎜");
+                                embed.setFooter("JukeBot 🎶");
                             message.channel.send(embed);
                             current = "";
                             current += (i + 1) + ": " +songs[i] + '\n';
