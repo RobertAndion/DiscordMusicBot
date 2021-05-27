@@ -171,6 +171,27 @@ module.exports = class ytdltie {
         message.channel.send("▶️ Unpaused the song!");
     }
 
+    async clear(message) {
+        //Clears the current queue entirely
+        const song_queue = this.queue.get(message.guild.id);
+        if(!song_queue) return message.channel.send("Nothing is currently playing.");
+        const voiceChannel = message.member.voice.channel;
+        
+        if(!voiceChannel || song_queue.voice_channel != voiceChannel) return message.channel.send("Please join a voice channel first");
+
+        const songlist = song_queue.songs; //songs in queue
+        songlist.splice(0, songlist.length);
+        try{
+            song_queue.connection.dispatcher.end();
+            message.channel.send("Queue is cleared.");
+        }
+        catch(err) { // Clear the buffer if we have trouble ending the queue.
+            song_queue.voice_channel.leave();
+            this.queue.delete(message.guild.id);
+            return;
+        }
+    }
+
     async create_playlist(message,playlistname) { // For now lets save by title only and worry about optimization later.
         const server_queue = this.queue.get(message.guild.id);
         if(!server_queue) return message.channel.send("Nothing is currently playing.");
@@ -518,6 +539,7 @@ module.exports = class ytdltie {
             embed.addField("!play (song name) or !p", "Play a song. Extra songs will be added to a queue", false);
             embed.addField("!skip (OPTIONAL number of songs)", "Skips the next song, or an optional amount of songs");
             embed.addField("!queue or !q", "Displays the current songs in queue");
+            embed.addField("!clear or !c", "Clears the entire current queue");
             embed.addField("!shuffle", "Shuffles the current queue");
             embed.addField("!pause or !ps", "Pauses the current song");
             embed.addField("!unpause or !up", "Unpauses the current song");

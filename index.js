@@ -56,6 +56,8 @@ async function commandHandler(command,args,message){
             await MusicHandler.pause(message);
         } else if (command == 'unpause' || command == 'up'){
             await MusicHandler.unpause(message);
+        } else if (command == 'clear' || command == 'c') {
+            await MusicHandler.clear(message);
         } else if (command == 'createplaylist' || command == 'cpl'){
             if(args.length > 0)
                 await MusicHandler.create_playlist(message,args.join(' '));
