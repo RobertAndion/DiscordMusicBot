@@ -1,7 +1,9 @@
+const fetch = require('node-fetch');
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
 const fs = require('fs');
 const { title } = require('process');
+
 
 module.exports = class ytdltie {
     constructor(Discord, client) {
@@ -437,6 +439,78 @@ module.exports = class ytdltie {
             })
     }
 
+    async get_playlist(message, playlistname) {
+        const dirName = './Playlists/';
+        const myScope = this;
+        fs.readFile(dirName + message.author + '.json','utf8',async function(err,data) { 
+            if(err) 
+                return message.channel.send("You do not have any playlists, create one with createplaylist");
+            else {
+                var playlists = JSON.parse(data);
+                try {
+                    var playlist = playlists[playlistname];
+                    message.author.send(new myScope.Discord.MessageAttachment(Buffer.from(JSON.stringify(playlist, null, 4)), playlistname + '.json'));
+                    //message.author.send("Playlist " + playlistname, {files: [dirName+playlistname+ '.json']}); //send message + file to user
+                }catch (err) {
+                    console.log(err);
+                    return message.channel.send("Sorry you don't have a playlist named: " + playlistname);
+                } 
+            }
+        });
+    }
+
+    async upload_playlist(message) {
+        const dirName = './Playlists/';
+        const myScope = this;
+        if(!message.attachments.size > 0)
+            return message.channel.send("Please attach a file to use this command");
+        var messageContent = message.attachments.array()[0];
+        //console.log(messageContent);
+        
+        if(!messageContent.name.includes('.json'))
+            return message.channel.send("Please only upload json files");
+
+        const playListNameFromFile = messageContent.name.replace('.json', '');
+        //Open file
+        fetch(messageContent.url).then(res => {
+            return res.json();
+        }).then(data => {
+            if(!data.length > 0) 
+                return message.channel.send("The file you are sending does not have any songs.");
+            fs.readFile(dirName + message.author + '.json', 'utf8', (err, dataOfAuthor) => {
+                if (err) {
+                    //No playlists, create playlist
+                    var playlists = new Map();
+                    playlists[playListNameFromFile] = [data[0]];
+                    var playlist = playlists[playListNameFromFile];
+                    for(let n = 1; n < data.length; n++) {
+                        playlist.push(data[n]);
+                    }
+                    playlists[playListNameFromFile] = playlist;
+                    this.writePlaylist(dirName, message, playlists);
+                    message.channel.send("Successfully created " + playListNameFromFile + "!");
+                } else {
+                    //Overwrite existing playlist
+                    var playlists = JSON.parse(dataOfAuthor);
+                    playlists[playListNameFromFile] = [data[0]];
+                    var playlist = playlists[playListNameFromFile];
+                    for(let n = 1; n < data.length; n++) {
+                        playlist.push(data[n]);
+                    }
+                    playlists[playListNameFromFile] = playlist;
+                    this.writePlaylist(dirName, message, playlists);
+                    message.channel.send("Successfully created " + playListNameFromFile + "!");
+                }});
+        });
+        
+        
+        //make sure file exists
+        //if not create playlist
+        //if exists just add
+        //key = playlistnamefromfile = json array which is data
+        //
+    }
+
     async help(message, args) {
         const playlistEmbed = new this.Discord.MessageEmbed();
         playlistEmbed.setTitle("JukeBot Playlist Commands");
@@ -450,6 +524,8 @@ module.exports = class ytdltie {
         playlistEmbed.addField("!deletefromlist (song number) (playlistname) or delsong or dfl", "Deletes song # from playlist x");
         playlistEmbed.addField("!deleteplaylist (playlistname) or deletelist or dl", "Deletes an entire playlist");
         playlistEmbed.addField("!renameplaylist (oldplaylist) (newplaylist) or !rename or !rl", "Renames a playlist.");
+        playlistEmbed.addField("!getplaylist (playlistname) or getlist or gl", "Sends given playlist content to user for sharing");
+        playlistEmbed.addField("!uploadplaylist or uplist", "Upload a file and give this command as the upload comment");
         playlistEmbed.setFooter("JukeBot 🎶")
 
         if (args == "playlist") {

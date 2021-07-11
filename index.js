@@ -106,6 +106,14 @@ async function commandHandler(command, args, message) {
                 await MusicHandler.add_queue_to_playlist(message, args.join(' '));
             else
                 return message.channel.send("Please specify the name of the playlist to add the queue to.");
+        } else if (command == 'getplaylist' || command == 'getlist' || command == 'gl') {
+            if (args.length > 0)
+                await MusicHandler.get_playlist(message, args.join(' '));
+            else
+                return message.channel.send("Please specify the name of the playlist to get.");
+        }
+        else if (command == 'uploadplaylist' || command == 'uplist') {
+            await MusicHandler.upload_playlist(message);
         }
         else if (command == 'help' || command == 'h') {
             await MusicHandler.help(message, args.join(' '));
