@@ -316,6 +316,7 @@ module.exports = class ytdltie {
                         else
                             message.channel.send("Failed to find song for: " + stringSongs[i]);
                     }
+                    message.channel.send(playlst + ' was added successfully');
                 } catch (err) {
                     return message.channel.send("Sorry you don't have a playlist named: " + playlist);
                 }
@@ -465,21 +466,19 @@ module.exports = class ytdltie {
         if(!message.attachments.size > 0)
             return message.channel.send("Please attach a file to use this command");
         var messageContent = message.attachments.array()[0];
-        //console.log(messageContent);
         
         if(!messageContent.name.includes('.json'))
             return message.channel.send("Please only upload json files");
 
         const playListNameFromFile = messageContent.name.replace('.json', '');
-        //Open file
+
         fetch(messageContent.url).then(res => {
             return res.json();
         }).then(data => {
             if(!data.length > 0) 
                 return message.channel.send("The file you are sending does not have any songs.");
             fs.readFile(dirName + message.author + '.json', 'utf8', (err, dataOfAuthor) => {
-                if (err) {
-                    //No playlists, create playlist
+                if (err) { //No playlists, create playlist
                     var playlists = new Map();
                     playlists[playListNameFromFile] = [data[0]];
                     var playlist = playlists[playListNameFromFile];
@@ -489,8 +488,7 @@ module.exports = class ytdltie {
                     playlists[playListNameFromFile] = playlist;
                     this.writePlaylist(dirName, message, playlists);
                     message.channel.send("Successfully created " + playListNameFromFile + "!");
-                } else {
-                    //Overwrite existing playlist
+                } else { //Overwrite existing playlist
                     var playlists = JSON.parse(dataOfAuthor);
                     playlists[playListNameFromFile] = [data[0]];
                     var playlist = playlists[playListNameFromFile];
@@ -502,13 +500,6 @@ module.exports = class ytdltie {
                     message.channel.send("Successfully created " + playListNameFromFile + "!");
                 }});
         });
-        
-        
-        //make sure file exists
-        //if not create playlist
-        //if exists just add
-        //key = playlistnamefromfile = json array which is data
-        //
     }
 
     async help(message, args) {
