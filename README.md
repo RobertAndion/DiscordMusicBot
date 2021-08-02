@@ -18,7 +18,7 @@ sudo apt-get install -y nodejs
 ```
 ### Dockerfile
 There is a Dockerfile for a container implementation, to use place all of the git files into a folder named Bot , 
-then place at the docker file at the same level as the folder (not inside). Configure the config.json inside the bot folder,
+then place the docker file at the same level as the folder (not inside). Configure the config.json inside the bot folder,
 and transfer any existing playlists into the playlist folder as well so they will automatically be added in the container.
 (More documentation on the container and auto running to come.)
 
