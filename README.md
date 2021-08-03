@@ -22,6 +22,19 @@ then place the docker file at the same level as the folder (not inside). Configu
 and transfer any existing playlists into the playlist folder as well so they will automatically be added in the container.
 (More documentation on the container and auto running to come.)
 
+#### Automatic Docker Startup
+In order to auto start, create the docker container and name it "musicbot",
+then place the musicbotstart.sh on the containers host machine. In the host machine run the command
+```
+crontab -e
+```
+Then choose nano if you are unfamiliar with linux editors, or pick your favorite editor. Add the following line to the bottom of
+the file it opens
+```
+@reboot sh /pathtoyourfile/musicbotstart.sh
+```
+Now upon the main server restarting it will start up the docker container and run the bot inside.
+
 ## COMMAND DOCUMENTATION:
 ### NOTE: 
 Anything after ! is a command name and the prefix ! is needed to run the command,
