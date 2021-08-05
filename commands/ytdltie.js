@@ -316,7 +316,7 @@ module.exports = class ytdltie {
                         else
                             message.channel.send("Failed to find song for: " + stringSongs[i]);
                     }
-                    message.channel.send(playlst + ' was added successfully');
+                    message.channel.send(playlist + ' was added successfully');
                 } catch (err) {
                     return message.channel.send("Sorry you don't have a playlist named: " + playlist);
                 }
