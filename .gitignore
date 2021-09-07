@@ -4,3 +4,5 @@ config.json
 commands/reference/
 
 node_modules/
+
+backup.zip
