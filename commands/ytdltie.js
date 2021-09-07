@@ -2,6 +2,7 @@ const fetch = require('node-fetch');
 const ytdl = require('ytdl-core');
 const ytSearch = require('yt-search');
 const fs = require('fs');
+const AdmZip = require('adm-zip');
 const { title } = require('process');
 
 
@@ -443,8 +444,8 @@ module.exports = class ytdltie {
     async get_playlist(message, playlistname) {
         const dirName = './Playlists/';
         const myScope = this;
-        fs.readFile(dirName + message.author + '.json','utf8',async function(err,data) { 
-            if(err) 
+        fs.readFile(dirName + message.author + '.json', 'utf8', async function (err, data) {
+            if (err)
                 return message.channel.send("You do not have any playlists, create one with createplaylist");
             else {
                 var playlists = JSON.parse(data);
@@ -452,22 +453,45 @@ module.exports = class ytdltie {
                     var playlist = playlists[playlistname];
                     message.author.send(new myScope.Discord.MessageAttachment(Buffer.from(JSON.stringify(playlist, null, 4)), playlistname + '.json'));
                     //message.author.send("Playlist " + playlistname, {files: [dirName+playlistname+ '.json']}); //send message + file to user
-                }catch (err) {
+                } catch (err) {
                     console.log(err);
                     return message.channel.send("Sorry you don't have a playlist named: " + playlistname);
-                } 
+                }
             }
         });
+    }
+
+    async backup_playlists(message) {
+        const dirName = './Playlists/';
+        const myScope = this;
+        let hasPermission = false;
+        const permittedIds = Array.from(this.client.users.cache.keys());
+        for (let i = 0; i < permittedIds.length; i++) {
+            if (message.author.id == permittedIds[i]) {
+                hasPermission = true;
+            }
+        }
+        if (!hasPermission) {
+            return;
+        }
+        const file = new AdmZip();
+        file.addLocalFolder(dirName);
+        file.writeZip('backup.zip', (err) => {
+            if (err) {
+                console.log(err);
+            }
+        });
+        message.author.send(new myScope.Discord.MessageAttachment('backup.zip'));
     }
 
     async upload_playlist(message) {
         const dirName = './Playlists/';
         const myScope = this;
-        if(!message.attachments.size > 0)
+        if (!message.attachments.size > 0)
             return message.channel.send("Please attach a file to use this command");
         var messageContent = message.attachments.array()[0];
-        
-        if(!messageContent.name.includes('.json'))
+
+        if (!messageContent.name.includes('.json'))
             return message.channel.send("Please only upload json files");
 
         const playListNameFromFile = messageContent.name.replace('.json', '');
@@ -475,14 +499,14 @@ module.exports = class ytdltie {
         fetch(messageContent.url).then(res => {
             return res.json();
         }).then(data => {
-            if(!data.length > 0) 
+            if (!data.length > 0)
                 return message.channel.send("The file you are sending does not have any songs.");
             fs.readFile(dirName + message.author + '.json', 'utf8', (err, dataOfAuthor) => {
                 if (err) { //No playlists, create playlist
                     var playlists = new Map();
                     playlists[playListNameFromFile] = [data[0]];
                     var playlist = playlists[playListNameFromFile];
-                    for(let n = 1; n < data.length; n++) {
+                    for (let n = 1; n < data.length; n++) {
                         playlist.push(data[n]);
                     }
                     playlists[playListNameFromFile] = playlist;
@@ -492,13 +516,14 @@ module.exports = class ytdltie {
                     var playlists = JSON.parse(dataOfAuthor);
                     playlists[playListNameFromFile] = [data[0]];
                     var playlist = playlists[playListNameFromFile];
-                    for(let n = 1; n < data.length; n++) {
+                    for (let n = 1; n < data.length; n++) {
                         playlist.push(data[n]);
                     }
                     playlists[playListNameFromFile] = playlist;
                     this.writePlaylist(dirName, message, playlists);
                     message.channel.send("Successfully created " + playListNameFromFile + "!");
-                }});
+                }
+            });
         });
     }
 

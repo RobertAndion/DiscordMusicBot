@@ -114,8 +114,9 @@ async function commandHandler(command, args, message) {
         }
         else if (command == 'uploadplaylist' || command == 'uplist') {
             await MusicHandler.upload_playlist(message);
-        }
-        else if (command == 'help' || command == 'h') {
+        } else if (command == 'backupplaylists' || command == 'bups') {
+            await MusicHandler.backup_playlists(message);
+        } else if (command == 'help' || command == 'h') {
             await MusicHandler.help(message, args.join(' '));
         } else {
             message.channel.send("Erm.. what?");
