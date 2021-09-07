@@ -6,3 +6,5 @@ commands/reference/
 node_modules/
 
 backup.zip
+
+package-lock.json

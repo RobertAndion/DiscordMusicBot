@@ -31,7 +31,7 @@ module.exports = class ytdltie {
     }
 
     async play(message, song) {
-        const voiceChannel = message.member.voice.channel;
+        const voiceChannel = await message.member.voice.channel;
         if (!voiceChannel) return message.channel.send("Please join a voice channel first.");
         const server_queue = this.queue.get(message.guild.id);
         if (!server_queue) {
@@ -45,7 +45,7 @@ module.exports = class ytdltie {
             queue_constructor.songs.push(song);
 
             try {
-                const connection = await voiceChannel.join()
+                const connection = await voiceChannel.join(); // This is broken
                 queue_constructor.connection = connection;
                 this.video_player(message.guild, queue_constructor.songs[0]);
                 message.channel.send(`Now playing **${song.title}**`);
@@ -116,7 +116,7 @@ module.exports = class ytdltie {
         embed.setTitle("Queue");
         embed.setDescription(pages[pageSafe - 1]);
         embed.setFooter("Page: " + pageSafe + "/" + pages.length);
-        message.channel.send(embed);
+        message.channel.send({ embeds: [embed] });
 
     }
 
@@ -239,7 +239,7 @@ module.exports = class ytdltie {
                 embed.setTitle(name[0] + "'s Playlists");
                 embed.setDescription(pages[pageSafe - 1]);
                 embed.setFooter("Page: " + pageSafe + "/" + pages.length);
-                message.channel.send(embed);
+                message.channel.send({ embeds: [embed] });
             }
         });
     }
@@ -263,7 +263,7 @@ module.exports = class ytdltie {
                                 embed.setTitle(playlist);
                             embed.setDescription(current);
                             embed.setFooter("JukeBot 🎶");
-                            message.channel.send(embed);
+                            message.channel.send({ embeds: [embed] });
                             current = "";
                             current += (i + 1) + ": " + songs[i] + '\n';
                         } else {
@@ -277,7 +277,7 @@ module.exports = class ytdltie {
                             embed.setTitle(playlist);
                         embed.setDescription(current);
                         embed.setFooter("JukeBot 🎶");
-                        message.channel.send(embed);
+                        message.channel.send({ embeds: [embed] });
                     }
                 } catch (err) {
                     return message.channel.send("Sorry you don't have a playlist named: " + playlist);
@@ -481,7 +481,8 @@ module.exports = class ytdltie {
                 console.log(err);
             }
         });
-        message.author.send(new myScope.Discord.MessageAttachment('backup.zip'));
+       // message.author.send(new myScope.Discord.MessageAttachment('backup.zip'));
+       message.author.send({files: ["./backup.zip"] });
     }
 
     async upload_playlist(message) {
@@ -545,7 +546,7 @@ module.exports = class ytdltie {
         playlistEmbed.setFooter("JukeBot 🎶")
 
         if (args == "playlist") {
-            message.channel.send(playlistEmbed)
+            message.channel.send({ embeds: [playlistEmbed] })
             return;
         }
 
@@ -563,6 +564,6 @@ module.exports = class ytdltie {
         embed.addField("!help playlist", "More information on playlists");
         embed.setFooter("JukeBot 🎶")
         message.channel.send(embed);
-        message.channel.send(playlistEmbed)
+        message.channel.send({ embeds: [playlistEmbed] })
     }
 }

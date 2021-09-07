@@ -8,7 +8,7 @@ const {
 } = require('./config.json');
 const { createContext } = require('vm');
 
-const client = new Discord.Client();
+const client = new Discord.Client({intents: ["GUILDS", "GUILD_MESSAGES", "DIRECT_MESSAGES", "GUILD_VOICE_STATES", "GUILD_WEBHOOKS", "GUILD_MEMBERS"]}); //const client = new Discord.Client({ intents: ["GUILDS", "GUILD_MESSAGES"] })
 const MusicHandler = new ytdltie(Discord, client);
 client.login(token);
 

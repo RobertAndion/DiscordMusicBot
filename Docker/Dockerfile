@@ -1,10 +1,11 @@
 FROM ubuntu
-RUN apt-get update && \
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
     apt-get full-upgrade -y && \
-    apt-get install curl -y && \
+    apt install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_16.x | bash && \
     apt-get install tmux -y && \
-    curl -sL https://deb.nodesource.com/setup_12.x | bash && \
-    apt-get install nodejs -y && \
+    apt-get install nodejs -yq && \
     apt-get remove curl -y
 
 ADD ./Bot /MusicBot
