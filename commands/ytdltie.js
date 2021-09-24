@@ -116,7 +116,8 @@ module.exports = class ytdltie {
         embed.setTitle("Queue");
         embed.setDescription(pages[pageSafe - 1]);
         embed.setFooter("Page: " + pageSafe + "/" + pages.length);
-        message.channel.send({ embeds: [embed] });
+        // message.channel.send({ embeds: [embed] });
+        message.channel.send(embed);
 
     }
 
@@ -239,7 +240,8 @@ module.exports = class ytdltie {
                 embed.setTitle(name[0] + "'s Playlists");
                 embed.setDescription(pages[pageSafe - 1]);
                 embed.setFooter("Page: " + pageSafe + "/" + pages.length);
-                message.channel.send({ embeds: [embed] });
+                // message.channel.send({ embeds: [embed] });
+                message.channel.send(embed);
             }
         });
     }
@@ -263,7 +265,8 @@ module.exports = class ytdltie {
                                 embed.setTitle(playlist);
                             embed.setDescription(current);
                             embed.setFooter("JukeBot 🎶");
-                            message.channel.send({ embeds: [embed] });
+                            // message.channel.send({ embeds: [embed] });
+                            message.channel.send(embed);
                             current = "";
                             current += (i + 1) + ": " + songs[i] + '\n';
                         } else {
@@ -277,7 +280,8 @@ module.exports = class ytdltie {
                             embed.setTitle(playlist);
                         embed.setDescription(current);
                         embed.setFooter("JukeBot 🎶");
-                        message.channel.send({ embeds: [embed] });
+                        // message.channel.send({ embeds: [embed] });
+                        message.channel.send(embed);
                     }
                 } catch (err) {
                     return message.channel.send("Sorry you don't have a playlist named: " + playlist);
@@ -546,7 +550,8 @@ module.exports = class ytdltie {
         playlistEmbed.setFooter("JukeBot 🎶")
 
         if (args == "playlist") {
-            message.channel.send({ embeds: [playlistEmbed] })
+            //message.channel.send({ embeds: [playlistEmbed] })
+            message.channel.send(playlistEmbed);
             return;
         }
 
@@ -564,6 +569,6 @@ module.exports = class ytdltie {
         embed.addField("!help playlist", "More information on playlists");
         embed.setFooter("JukeBot 🎶")
         message.channel.send(embed);
-        message.channel.send({ embeds: [playlistEmbed] })
+        // message.channel.send({ embeds: [playlistEmbed] })
     }
 }
