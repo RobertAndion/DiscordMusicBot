@@ -1,6 +1,3 @@
-# Currently Borked due to API Update. See Issue #7 
-
-
 # DiscordMusicBotNode
 This is a new project undertaken by myself and Bianca, it is in the very early development stage.
 If you come across some issues feel free to post them in the issues.
