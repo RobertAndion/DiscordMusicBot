@@ -146,44 +146,72 @@ Playlists are stored per user. Each user's playlists are saved in the `Playlists
 
 The `Docker/` folder contains a Dockerfile for running the bot in a container.
 
+### Folder Structure
+
+On your server, create a build directory with this layout before building:
+
+```
+musicbot-build/
+├── Dockerfile              ← copy from Docker/Dockerfile in this repo
+├── Bot/
+│   ├── index.js
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── config.json         ← create from config.sample.json (add your token)
+│   ├── commands/
+│   │   ├── ytdltie.js
+│   │   └── commandHandler.js
+│   ├── Playlists/          ← leave empty or restore from a previous backup
+│   └── Logs/               ← leave empty
+```
+
+Files you do **not** need to copy:
+- `node_modules/` — created by `npm install` inside the container during build
+- `startup.sh` — obsolete; the Dockerfile's `CMD` starts the bot directly
+- `Docker/musicbotstart.sh` — goes on the **host**, not inside `Bot/`
+- `tests/` — not needed at runtime
+
 ### Build
 
-Place the project files in a folder named `Bot`, then put the Dockerfile one level above:
-
-```
-parent/
-  Bot/          ← project files here
-  Dockerfile
-```
-
-Set your token in `Bot/config.json` first, then build:
+From inside `musicbot-build/` (where the Dockerfile sits):
 
 ```bash
 docker build -t musicbot .
 ```
 
-### Run
+### First Run
+
+Run once to create and start the named container:
 
 ```bash
-docker run -it -m 2G --cpuset-cpus 0-1 --security-opt=no-new-privileges musicbot
+docker run -d --name musicbot -m 2G --cpuset-cpus 0-1 --security-opt=no-new-privileges musicbot
 ```
 
-The `-m` and `--cpuset-cpus` flags are optional resource limits. Keep `--security-opt=no-new-privileges`.
+- `-d` runs it detached (in the background) — the bot starts automatically via the `CMD` in the Dockerfile
+- `--name musicbot` names the container so the startup script can find it
+- `-m` and `--cpuset-cpus` are optional resource limits; `--security-opt=no-new-privileges` is recommended
 
-### Naming the Container
+### Stop the Bot
 
 ```bash
-docker container ls -a
-docker rename <container_id> musicbot
+docker stop musicbot
+```
+
+### Start After a Manual Stop
+
+```bash
+docker container start musicbot
 ```
 
 ### Automatic Startup on Host Reboot
 
-Place `musicbotstart.sh` on the host, then add to the host's crontab (`crontab -e`):
+`musicbotstart.sh` restarts the named container after a system reboot. Place it on the host and add to the host's crontab (`crontab -e`):
 
 ```
 @reboot sh /path/to/musicbotstart.sh
 ```
+
+The script waits 30 seconds for Docker to be ready before issuing the start command. This only works after the **First Run** above has been done at least once (so the named container exists).
 
 ### Updating the Bot in Docker
 
