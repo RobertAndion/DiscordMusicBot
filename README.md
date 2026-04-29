@@ -1,115 +1,190 @@
-# DiscordMusicBotNode
-This is a new project undertaken by myself and Bianca, it is in the very early development stage.
-If you come across some issues feel free to post them in the issues.
+# JukeBot — Discord Music Bot
 
-### General Setup
-The installation of the bots packages can be made from npm install when in the same directory as the 
-package.json file. You must open config.sample.json and insert your bots token, after which you should 
-rename the file to config.json. 
-To run the bot: 
+A Discord music bot built with Node.js that plays YouTube audio in voice channels with a full queue and playlist system.
+
+---
+
+## Requirements
+
+- **Node.js 18 or later** (20 LTS recommended)
+- **npm**
+- A Discord bot account (see setup below)
+
+---
+
+## Discord Developer Portal Setup
+
+Before running the bot you need a Discord application and bot account. Follow these steps exactly — skipping the intent toggles is the most common reason the bot stops responding.
+
+### 1. Create the Application
+
+1. Go to [discord.com/developers/applications](https://discord.com/developers/applications)
+2. Click **New Application**, give it a name, and confirm.
+
+### 2. Create the Bot Account
+
+1. In the left sidebar click **Bot**.
+2. Click **Add Bot** → **Yes, do it!**
+3. Under **Token**, click **Reset Token** and copy it — you will paste this into `config.json`. Keep it secret; anyone with this token controls the bot.
+
+### 3. Enable Privileged Gateway Intents
+
+Still on the **Bot** page, scroll down to **Privileged Gateway Intents** and enable **all three**:
+
+| Intent | Why it's needed |
+|---|---|
+| **Presence Intent** | Recommended on; harmless to leave on |
+| **Server Members Intent** | Required for member-related checks |
+| **Message Content Intent** | **Critical** — without this the bot cannot read any command you type and will silently ignore all messages |
+
+Click **Save Changes**.
+
+### 4. Invite the Bot to Your Server
+
+1. In the left sidebar click **OAuth2** → **URL Generator**.
+2. Under **Scopes** check `bot`.
+3. Under **Bot Permissions** check:
+   - `Read Messages / View Channels`
+   - `Send Messages`
+   - `Embed Links`
+   - `Attach Files`
+   - `Read Message History`
+   - `Connect`
+   - `Speak`
+4. Copy the generated URL at the bottom and open it in your browser to invite the bot to your server.
+
+---
+
+## Installation
+
+```bash
+# Clone or download the repository
+git clone https://github.com/RobertAndion/DiscordMusicBotNode.git
+cd DiscordMusicBotNode
+
+# Install dependencies
+npm install
 ```
+
+### Configuration
+
+Copy the sample config and add your bot token:
+
+```bash
+cp config.sample.json config.json
+```
+
+Open `config.json` and fill in your token:
+
+```json
+{
+    "prefix": "!",
+    "token": "YOUR_BOT_TOKEN_HERE"
+}
+```
+
+The prefix can be changed to any character or string you prefer.
+
+---
+
+## Running the Bot
+
+```bash
 node index.js
 ```
-### Node must be version 12!
-Ubuntu node install:
-```
-curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
-### Docker
-If you wish to run the bot in a docker container the Docker folder provides a
-dockerfile to do so. In order to use the file place the github files in a folder named Bot,
-then place the dockerfile on the same level as the Bot folder (not inside) then run a normal build 
-command. First set the correct key in config.json and add any lists into the Playlist folder (if you have existing playlists) and they
-will automatically be brought into the container. 
 
-Docker start command:
-```
-docker run -it -m 2G --cpuset-cpus 0-1 --security-opt=no-new-privileges <image_id_here>
-```
-In this command the -m and --cpuset-cpus are optional but means that the container can use at most
-two gigabytes of RAM and cpuset 0-1 means that the container can use threads 0 and 1. (Limiting resources)
-All of this can be adjusted to suit or removed entirely. Keep --security-opt=no-new-privileges for security.
+Or using the npm script:
 
-After this you can exit the container and rename it using
+```bash
+npm start
 ```
+
+You should see `Bot is live.` in the terminal when it connects.
+
+---
+
+## Commands
+
+The default prefix is `!`. Aliases are listed in parentheses.
+
+### Music
+
+| Command | Alias | Description |
+|---|---|---|
+| `!play <song name or URL>` | `!p` | Join your voice channel and play a song. Adds to queue if already playing. |
+| `!skip [amount]` | — | Skip the current song, or skip multiple songs with an optional number. |
+| `!queue [page]` | `!q` | Show the current queue. Use a page number for long queues. |
+| `!pause` | `!ps` | Pause the current song. |
+| `!unpause` | `!up` | Resume a paused song. |
+| `!shuffle` | — | Shuffle all songs in the queue (keeps the current song in place). |
+| `!clear` | `!c` | Clear the entire queue and stop playback. |
+| `!help` | `!h` | Show the command list in chat. |
+| `!help playlist` | — | Show playlist command list in chat. |
+
+### Playlists
+
+Playlists are stored per user. Each user's playlists are saved in the `Playlists/` folder.
+
+| Command | Alias | Description |
+|---|---|---|
+| `!createplaylist <name>` | `!cpl` | Create a new playlist with the currently playing song. |
+| `!addtoplaylist <name>` | `!atp` | Add the currently playing song to an existing playlist. |
+| `!addqueuetoplaylist <name>` | `!aqtp` | Add the entire current queue to a playlist. |
+| `!playfromlist <name>` | `!pl`, `!playl` | Load a playlist into the queue and start playing. |
+| `!listplaylists [page]` | `!lpl` | List all your playlists. |
+| `!viewplaylist <name>` | `!vpl` | View the songs inside a playlist. |
+| `!deletefromlist <#> <name>` | `!dfl`, `!delsong` | Remove song number `#` from a playlist. |
+| `!deleteplaylist <name>` | `!dl`, `!deletelist` | Delete an entire playlist. |
+| `!renameplaylist <old> <new>` | `!rl`, `!rename` | Rename a playlist. |
+| `!getplaylist <name>` | `!gl`, `!getlist` | DM you the playlist as a `.json` file for sharing or backup. |
+| `!uploadplaylist` | `!uplist` | Attach a `.json` playlist file to the message to import it. |
+| `!backupplaylists` | `!bups` | DM you a zip of all playlist files (Docker use — see below). |
+
+---
+
+## Docker
+
+The `Docker/` folder contains a Dockerfile for running the bot in a container.
+
+### Build
+
+Place the project files in a folder named `Bot`, then put the Dockerfile one level above:
+
+```
+parent/
+  Bot/          ← project files here
+  Dockerfile
+```
+
+Set your token in `Bot/config.json` first, then build:
+
+```bash
+docker build -t musicbot .
+```
+
+### Run
+
+```bash
+docker run -it -m 2G --cpuset-cpus 0-1 --security-opt=no-new-privileges musicbot
+```
+
+The `-m` and `--cpuset-cpus` flags are optional resource limits. Keep `--security-opt=no-new-privileges`.
+
+### Naming the Container
+
+```bash
 docker container ls -a
+docker rename <container_id> musicbot
 ```
-and then use the container id in the following command:
-```
-docker rename <container_id_here> musicbot
-```
-Now the automatic start file will boot up the container and automatically run the bot inside,
-if the instructions below are followed.
 
-#### Note:
-You will be unable to update these containers from the inside so the command .backupPlaylists is here
-in order to send you the playlists (only new info in the container) so you can remake the container images
-often to get updates and changes to the bots code, simply place the .json lists back in the playlist folder
-before building the new image and they will be added to the new image.
+### Automatic Startup on Host Reboot
 
-#### Automatic Docker Startup
-In order to auto start, create the docker container and name it "musicbot",
-then place the musicbotstart.sh on the containers host machine. In the host machine run the command:
-(use sudo -i first if you need sudo to run docker, you should.)
-```
-crontab -e
-```
-Then choose nano if you are unfamiliar with linux editors, or pick your favorite editor. Add the following line to the bottom of
-the file it opens
-```
-@reboot sh /pathtoyourfile/musicbotstart.sh
-```
-Now upon the main server restarting it will start up the docker container and run the bot inside.
-
-## COMMAND DOCUMENTATION:
-### NOTE: 
-Anything after ! is a command name and the prefix ! is needed to run the command,
-the items in <> are the function arguments, () are aliases, and anything with OPTIONAL is as it sounds.
-(The prefix can be made to any variable by adjusting the field in config.json)
+Place `musicbotstart.sh` on the host, then add to the host's crontab (`crontab -e`):
 
 ```
-!play <SONG-NAME> (p)
+@reboot sh /path/to/musicbotstart.sh
 ```
-If the person using the command is in a voice channel and the bot has access to that channel it will connect and play the song listed. This is also the command to continue adding songs to the queue, it covers both functions. The bot will auto disconnect
-when the end of the queue is reached.
 
-```
-!pause <> (ps)
-```
-This will check if the player is playing, and if the person envoking is in the same channel
-as the bot. If so it will pause the song indefinetely as of now. (May add auto resume)
+### Updating the Bot in Docker
 
-```
-!unpause <> (up)
-```
-This will check that the bot is "playing" but paused. It will also check to make sure
-the envoker is in the same channel as the bot. If so it will resume the playing of a paused song.
-
-```
-!skip <OPTIONAL amount> ()
-```
-If the bot is playing a song it will skip to the next song as long as the person is in the same
-voice channel as the bot. If there are no songs after the bot will automatically disconnect. 
-The argument can be used to say how many songs to skip. (>=1)
-#### Note: Skip is also used to clear out errors. If something happens and the bot freezes or stops playing audio, try using skip to reset it. 
-
-```
-!queue <OPTIONAL page number> ()
-```
-The queue command will show the currently playing song and all other songs in an embedded queue.
-If the queue is longer than 10 songs it will wrap into multiple pages and a page number argument is 
-optional to view these additiona pages. (First page is default.)
-
-```
-!shuffle <> ()
-```
-If the bot is playing and the envoker is in the same voice channel as the bot, this command
-will shuffle all songs in the servers queue.
-
-For a version in python3 try: https://github.com/RobertAndion/Discord_Music_Bot
-### Future:
-We are moving towards a stable version of this bot with more error checking/handling and making it less prone to failure.
-We soon plan to add a playlist system in which you can store and load playlists into the bots queue.
-If you have suggestions for functionality or have found bugs in the system please create an issue and upload your log
-file content so we can see the root of the issue. Thank you, Robert and Bianca.
+You cannot update files inside a running container. Use `!backupplaylists` to receive a zip of your playlist files before rebuilding. Place the `.json` files back in the `Playlists/` folder before building the new image so they are included automatically.

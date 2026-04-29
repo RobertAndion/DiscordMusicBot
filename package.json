@@ -1,10 +1,21 @@
 {
   "name": "discordmusicbot",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A bot to play songs on discord",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "test": "jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "commands/**/*.js"
+    ]
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
   },
   "repository": {
     "type": "git",
@@ -17,11 +28,12 @@
   },
   "homepage": "https://github.com/RobertAndion/DiscordMusicBotNode#readme",
   "dependencies": {
-    "@discordjs/opus": "^0.6.0",
+    "@discordjs/opus": "^0.10.0",
+    "@discordjs/voice": "^0.19.0",
     "adm-zip": "^0.5.5",
-    "discord.js": "^12.5.3",
-    "ffmpeg-static": "^4.4.0",
-    "yt-search": "^2.10.1",
-    "ytdl-core": "^4.9.1"
+    "discord.js": "^14.0.0",
+    "ffmpeg-static": "^5.2.0",
+    "node-fetch": "^2.7.0",
+    "yt-dlp-exec": "^1.0.2"
   }
 }
