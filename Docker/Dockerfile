@@ -1,19 +1,41 @@
-FROM ubuntu
+# ---------- BUILD STAGE ----------
+# Compiles native deps (@discordjs/opus needs node-gyp → python3 + build tools)
+# and fetches the yt-dlp / ffmpeg binaries into node_modules.
+FROM node:20-bookworm-slim AS builder
 
-RUN export DEBIAN_FRONTEND=noninteractive && \
-    apt-get update && \
-    apt-get full-upgrade -y && \
-    apt-get install -y curl python3 build-essential ffmpeg tmux && \
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash && \
-    apt-get install -y nodejs && \
-    apt-get clean
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3 \
+        build-essential \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-ADD ./Bot /MusicBot
+WORKDIR /MusicBot
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
+# ---------- RUNTIME STAGE ----------
+# python3 is required at runtime: yt-dlp-exec ships the yt-dlp zipapp, which runs
+# under Python. ffmpeg comes from the ffmpeg-static npm package (in node_modules).
+FROM node:20-bookworm-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3 \
+        ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /MusicBot
 
-RUN npm install
+COPY --from=builder /MusicBot/node_modules ./node_modules
+COPY . .
 
-RUN groupadd -g 1000 basicuser && useradd -r -u 1000 -g basicuser basicuser
+RUN mkdir -p Playlists Logs && \
+    groupadd -g 999 basicuser && useradd -r -u 999 -g basicuser basicuser && \
+    chown -R basicuser:basicuser /MusicBot
+
 USER basicuser
 
+# config.json is bind-mounted at runtime (see run.sh); it is never baked in.
 CMD ["node", "index.js"]

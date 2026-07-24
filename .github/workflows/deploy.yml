@@ -1,0 +1,60 @@
+name: Deploy to DigitalOcean
+
+# Deploys on every push to main, or manually via the Actions tab.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Never run two deploys at once; cancel an in-progress one if a newer push lands.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build & restart on droplet
+    runs-on: ubuntu-latest
+    # Native ssh (below) streams the remote build output live into this log.
+    timeout-minutes: 40
+    steps:
+      - name: Deploy over SSH (streaming)
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          DROPLET_HOST: ${{ secrets.DROPLET_HOST }}
+          DROPLET_USER: ${{ secrets.DROPLET_USER }}
+          DROPLET_SSH_PORT: ${{ secrets.DROPLET_SSH_PORT || 22 }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/opt/musicbot-node' }}
+          DEPLOY_BRANCH: main
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          # Optional: command prefix (defaults to "!") and a block-storage path.
+          BOT_PREFIX: ${{ secrets.BOT_PREFIX }}
+          MUSICBOT_DATA_DIR: ${{ secrets.MUSICBOT_DATA_DIR }}
+        run: |
+          set -euo pipefail
+
+          # --- Set up the SSH key and host verification ---
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$DROPLET_SSH_PORT" -H "$DROPLET_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          # --- Run the deploy, streaming remote stdout/stderr live ---
+          # Secrets are passed as the remote bash's environment; the heredoc is
+          # the script it runs (quoted so it expands on the droplet, not here).
+          # -tt forces a pseudo-TTY so the remote output is line-buffered and
+          # flushed immediately, instead of block-buffered until the step ends.
+          ssh -tt -i ~/.ssh/deploy_key -p "$DROPLET_SSH_PORT" \
+              -o StrictHostKeyChecking=yes \
+              "$DROPLET_USER@$DROPLET_HOST" \
+              "DEPLOY_PATH='$DEPLOY_PATH' DEPLOY_BRANCH='$DEPLOY_BRANCH' \
+               DISCORD_TOKEN='$DISCORD_TOKEN' BOT_PREFIX='$BOT_PREFIX' \
+               MUSICBOT_DATA_DIR='$MUSICBOT_DATA_DIR' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          echo "==> Syncing code to origin/$DEPLOY_BRANCH"
+          git fetch --all --prune
+          git reset --hard "origin/$DEPLOY_BRANCH"
+          git clean -fd -e config.json
+          bash deploy/deploy.sh
+          REMOTE

@@ -103,6 +103,32 @@ You should see `Bot is live.` in the terminal when it connects.
 
 ---
 
+## Docker
+
+Build and run in a container (config is bind-mounted, playlists/logs persist in
+volumes):
+
+```bash
+cp config.sample.json config.json   # add your token
+docker build -f Docker/Dockerfile -t discord-music-bot-node:latest .
+./run.sh
+docker logs -f musicbot-node
+```
+
+## Automated Deployment (CI/CD) — Optional
+
+Push-to-deploy on a server (DigitalOcean droplet, any VPS, or a home server):
+GitHub Actions SSHes in, rebuilds the Docker image, and restarts the bot, with
+the token stored as a GitHub Actions secret. It's designed to **share a droplet
+with the Python [Discord_Music_Bot](https://github.com/RobertAndion/Discord_Music_Bot)**
+without conflicts.
+
+See **[deploy/README.md](deploy/README.md)** for the full guide (server bootstrap,
+SSH key, secrets, and optional Block Storage for durable playlists). Entirely
+optional — the manual and Docker instructions above work on their own.
+
+---
+
 ## Commands
 
 The default prefix is `!`. Aliases are listed in parentheses.
